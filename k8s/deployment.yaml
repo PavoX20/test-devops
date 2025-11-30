@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-banco-deployment
+  labels:
+    app: api-banco
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-banco
+  template:
+    metadata:
+      labels:
+        app: api-banco
+    spec:
+      containers:
+      - name: api-container
+        image: pavox20/reto-devops-api:v1
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
