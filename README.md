@@ -1,21 +1,25 @@
 # DevOps Technical Assessment
 
-Este repositorio contiene la solución a un reto técnico de
-DevOps. El proyecto consiste en el desarrollo, contenerización,
-infraestructura y despliegue automatizado de un microservicio REST, siguiendo metodologías de **TDD (Test Driven Development)**.
+Este repositorio contiene la solución a un reto técnico de DevOps. El
+proyecto consiste en el desarrollo, contenerización, infraestructura y
+despliegue automatizado de un microservicio REST, siguiendo metodologías
+de **TDD (Test Driven Development)**.
 
-## 🚀 LIVE DEMO (Despliegue en Google Cloud)
+------------------------------------------------------------------------
+
+## LIVE DEMO (Desplegado en Google Cloud)
 
 La aplicación se encuentra actualmente desplegada y operativa en un
-clúster de **Google Kubernetes Engine (GKE)** con Balanceo de Carga usando 2 Nodos.
+clúster de **Google Kubernetes Engine (GKE)** con Balanceo de Carga
+usando **2 Nodos**.
 
+🟢 **Online** --- GCP --- Kubernetes --- `http://34.136.147.55/DevOps`
 
-   🟢 **Online**        GCP         Kubernetes    `http://34.136.147.55/DevOps`
+------------------------------------------------------------------------
 
-### ⚡ Prueba de Éxito (Happy Path)
+## Prueba de Éxito
 
-Copie y pegue el siguiente comando para validar el endpoint con los
-datos requeridos por el reto:
+Ejecute el siguiente comando para validar el endpoint:
 
 ``` bash
 curl -X POST http://34.136.147.55/DevOps -H "X-Parse-REST-API-Key: 2f5ae96c-b558-4c7b-a590-a501ae1c3f6c" -H "X-JWT-KWY: cualquier_token_valido" -H "Content-Type: application/json" -d '{
@@ -26,7 +30,7 @@ curl -X POST http://34.136.147.55/DevOps -H "X-Parse-REST-API-Key: 2f5ae96c-b558
 }'
 ```
 
-### Respuesta Esperada:
+### Respuesta Esperada
 
 ``` json
 {
@@ -36,17 +40,15 @@ curl -X POST http://34.136.147.55/DevOps -H "X-Parse-REST-API-Key: 2f5ae96c-b558
 
 ------------------------------------------------------------------------
 
-## 🚫 Prueba de Error (Métodos no permitidos)
+## Prueba de Error (Métodos no permitidos)
 
-Cualquier petición HTTP que no sea POST (ej: GET, PUT, DELETE) retornará
-el mensaje solicitado.
+Cualquier petición HTTP distinta de **POST** devolverá error:
 
 ``` bash
-# Intento con GET
 curl -X GET http://34.136.147.55/DevOps -H "X-Parse-REST-API-Key: 2f5ae96c-b558-4c7b-a590-a501ae1c3f6c" -H "X-JWT-KWY: token"
 ```
 
-### Respuesta Esperada:
+### Respuesta Esperada
 
 ``` json
 "ERROR"
@@ -58,39 +60,59 @@ curl -X GET http://34.136.147.55/DevOps -H "X-Parse-REST-API-Key: 2f5ae96c-b558-
 
 -   **Aplicación:** Python 3.9 + FastAPI
 -   **Pruebas:** Pytest (TDD)
--   **Contenerización:** Docker 
--   **IaC:** Terraform 
--   **Orquestador:** Google Kubernetes Engine 
+-   **Contenerización:** Docker
+-   **IaC:** Terraform
+-   **Orquestador:** Google Kubernetes Engine
 -   **CI/CD:** GitHub Actions
 -   **Registry:** Docker Hub
 
 ------------------------------------------------------------------------
 
-## 🔄 Pipeline CI/CD (Automatización)
+## Estrategia de Escalabilidad
 
-Cada cambio en la rama **main** ejecuta automáticamente:
+La arquitectura escala dinámicamente en dos niveles:
+
+### **1. Escalado a nivel Kubernetes (HPA)**
+
+-   Los pods tienen asignados recursos específicos.
+-   **1000m = 1 vCPU completa**.
+-   Cada pod tiene `request: 100m` (10% de CPU).
+-   Si la carga supera ese valor, Kubernetes crea nuevas réplicas
+    automáticamente.
+
+### **2. Escalado a nivel Cloud (GKE Cluster Autoscaler)**
+
+-   Si los Pods saturan los 2 nodos actuales, GKE aprovisiona
+    automáticamente un **nuevo nodo**.\
+-   Esto garantiza disponibilidad incluso bajo alta demanda.
+
+------------------------------------------------------------------------
+
+## Pipeline CI/CD (Automatización)
+
+Cada cambio en la rama **main** ejecuta:
 
 ### **Stage: Build & Test**
 
 -   Instala dependencias\
--   Ejecuta pytest (si falla, se detiene)
+-   Ejecuta Pytest\
+-   Si falla, el pipeline se detiene
 
 ### **Stage: Build & Push**
 
 -   Construye imagen Docker\
--   Publica en Docker Hub con etiqueta SHA
+-   Publica en Docker Hub con tag SHA
 
 ### **Stage: Deploy to GKE**
 
 -   Autenticación en Google Cloud\
 -   Rolling Update sin downtime
 
-
 ------------------------------------------------------------------------
 
-## ☁️ Infraestructura (IaC)
+## Infraestructura (IaC)
 
-El clúster fue aprovisionado utilizando Terraform en Google Cloud
-Platform.\
+El clúster fue aprovisionado con **Terraform** en Google Cloud Platform.
+
 **Ubicación del código:** `./terraform/main.tf`\
-**Recursos:** GKE Cluster + Node Pool (2 Nodos Standard)
+**Recursos:** GKE Cluster + Node Pool (2 nodos Standard)
